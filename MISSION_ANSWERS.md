@@ -233,7 +233,191 @@ Docker Compose báo cảnh báo version obsolete, nhưng không ảnh hưởng �
 
 ### Exercise 3.1 / 3.2: Cloud deployment
 
+#### Selected Cloud Platform
+
+Nền tảng chính được lựa chọn là Render Cloud.
+Agent được triển khai từ thư mục 06-lab-complete,
+sử dụng Dockerfile production đã đạt 12/12 tiêu chí
+và 43/43 checks trong CP5.
+
+| Setting | Actual Value |
+|---------|--------------|
+| Platform | Render |
+| Service | day14-production-agent |
+| Region | Singapore |
+| Branch | main |
+| Source Commit | 9963514 |
+| Runtime | Docker |
+| Root Directory | 06-lab-complete |
+| Deployment Duration | 1 minute 11 seconds |
+| Compute Plan | Free |
+| CPU | 0.1 CPU |
+| RAM | 512 MB |
+| Deployment Status | Live |
+
+#### Public URL
+
+https://day14-production-agent-zadu.onrender.com
+
+API Documentation:
+
+https://day14-production-agent-zadu.onrender.com/docs
+
+#### Cloud Redis
+
+| Setting | Actual Value |
+|---------|--------------|
+| Service | day14-redis |
+| Runtime | Valkey 8.1.10 |
+| Region | Singapore |
+| Memory | 25 MB |
+| Maximum Connections | 50 |
+| Maxmemory Policy | noeviction |
+| Persistence Mode | Off |
+| Compute Plan | Free |
+| Status | Available |
+
+Agent sử dụng Internal Redis URL để kết nối Redis
+qua private network của Render.
+
+Redis lưu trạng thái Rate Limiting và Cost Guard
+bên ngoài bộ nhớ của Agent.
+
+Maxmemory Policy noeviction được lựa chọn để
+tránh tự động xóa các key đang lưu trạng thái
+Rate Limiting và Cost Guard khi bộ nhớ đầy.
+
+#### Environment Variables
+
+| Variable | Configuration |
+|----------|---------------|
+| PORT | Render platform supplied |
+| ENVIRONMENT | production |
+| AGENT_API_KEY | Generated on Render |
+| REDIS_URL | Internal Redis URL |
+| RATE_LIMIT_PER_MINUTE | 10 |
+| DAILY_BUDGET_USD | 1.0 |
+
+API Key và Redis URL được cấu hình trực tiếp trên
+Render Dashboard, không ghi secret vào source code
+hoặc GitHub repository.
+
+#### Cloud Architecture
+
+```mermaid
+flowchart TD
+    GitHub[GitHub main] -->|Docker deployment| Agent
+    Client -->|HTTPS| Agent
+    subgraph Render Singapore
+        Agent[Production FastAPI Agent]
+        Redis[Cloud Redis - Valkey]
+        Agent -->|Private network| Redis
+    end
+    Agent --> MockLLM[Mock LLM]
+```
+
+#### Actual Cloud API Test Results
+
+| Test | Expected | Actual | Result |
+|------|----------|--------|--------|
+| GET /health | HTTP 200 | HTTP 200 | PASS |
+| GET /ready | HTTP 200 | HTTP 200 | PASS |
+| POST /ask without API Key | HTTP 401 | HTTP 401 | PASS |
+| POST /ask with valid API Key | HTTP 200 | HTTP 200 | PASS |
+
+Result: 4/4 PASS.
+
+Verification time: 26/11/2026, 14:44:03 (UTC+7).
+
+Health Check xác nhận Agent đang hoạt động trong
+môi trường production.
+
+Readiness Check xác nhận Agent kết nối được
+với Cloud Redis.
+
+Authentication Test xác nhận request không có
+API Key bị từ chối và request có API Key hợp lệ
+được xử lý thành công.
+
+#### Evidence
+
+- [Deployment report](DEPLOYMENT.md)
+- [Cloud API verification](evidence/CP6/cloud-deployment.txt)
+- [Cloud Redis](screenshots/CP6-01-cloud-redis.png)
+- [Deployment success](screenshots/CP6-02-deployment-success.png)
+- [API verification](screenshots/CP6-03-api-verification.png)
+
+#### Railway vs Render Configuration
+
+| Feature | Railway | Render |
+|---------|---------|--------|
+| Config File | railway.toml | render.yaml |
+| Config Format | TOML | YAML |
+| Docker Build | builder = DOCKERFILE | runtime: docker |
+| Dockerfile | Dockerfile | ./Dockerfile |
+| Root Directory | Platform configuration | rootDir: 06-lab-complete |
+| Health Check | /health | /health |
+| Health Check Timeout | 100 seconds | Platform default |
+| Restart Policy | ON_FAILURE | Platform-managed |
+| Restart Retries | 3 | Not explicitly configured |
+| API Key | Platform variables | generateValue: true |
+| Redis URL | Platform variables | sync: false |
+| Deployment | Not deployed | Successfully deployed |
+
+Railway sử dụng TOML để mô tả cấu hình build,
+health check và restart policy.
+
+Render sử dụng YAML Blueprint để mô tả Web Service,
+Docker runtime, root directory và environment variables.
+
+Railway khai báo restart khi gặp lỗi với tối đa
+ba lần thử lại. Render configuration hiện tại
+không khai báo restart policy riêng.
+
+Render cho phép tự động tạo API Key bằng
+generateValue: true và yêu cầu cung cấp Redis URL
+bằng sync: false, giúp tránh hardcode secrets.
+
+Cả hai nền tảng đều hỗ trợ Docker và sử dụng PORT
+động do platform cung cấp. Vì vậy, application
+code không cần thay đổi khi chuyển nền tảng,
+nhưng cần cấu hình lại môi trường và Cloud Redis.
+
+Render được chọn làm nền tảng chính cho bài lab
+vì có Web Service và Redis-compatible Key Value
+với gói compute miễn phí.
+
+Railway được phân tích thông qua configuration,
+chưa thực hiện deployment thực tế.
+
+#### Cloud Deployment Limitations
+
+- Web Service Free Plan có thể spin down khi không hoạt động.
+- Request đầu tiên sau thời gian không hoạt động có thể gặp cold start.
+- Free Redis không hỗ trợ disk persistence.
+- Rate Limiting và Cost Guard state có thể mất nếu Redis restart.
+- Giữ state sau Agent restart khác với Redis disk persistence.
+- Agent sử dụng Mock LLM, không phát sinh chi phí LLM thật.
+- Tổng chi phí compute theo hai gói đã chọn là $0/month.
+- Chưa kiểm thử cloud failover hoặc production SLA.
+
 ### Exercise 3.3: Cloud Run CI/CD pipeline
+
+Dựa trên cloudbuild.yaml và service.yaml:
+
+1. Test: Cloud Build cài dependencies và pytest, sau đó chạy unit tests.
+2. Build: Docker image được tạo với hai tag COMMIT_SHA và latest.
+3. Push: Docker image được đưa lên container registry.
+4. Deploy: Cloud Run triển khai image theo COMMIT_SHA tại asia-southeast1, cấu hình 1-10 instances, 1 CPU, 512 MiB RAM và timeout 60 giây.
+5. Service definition: service.yaml khai báo concurrency 80, health/startup probes và secrets lấy từ Google Secret Manager.
+
+Pipeline được thiết kế để tự động chạy khi push
+lên main nếu Cloud Build Trigger đã được cấu hình.
+
+Exercise này chỉ phân tích configuration mẫu.
+Chưa thực hiện deployment trên Google Cloud Run.
+
+**Cloud Deployment Result: 4/4 Acceptance Tests PASS.**
 
 ## Part 4: API Security
 
@@ -748,6 +932,7 @@ Full assessment output:
 | Part 1 | ChatGPT | Giải thích các anti-pattern, sự khác biệt giữa môi trường Development và Production, hướng dẫn cách kiểm tra API. | Trực tiếp chạy và kiểm tra Basic Agent và Advanced Agent. |
 | Part 1 | ChatGPT | Hướng dẫn cách trình bày câu trả lời và tổng hợp kết quả thực nghiệm. | Đối chiếu nội dung báo cáo với kết quả thực tế trên Terminal. |
 | Part 2 | ChatGPT | Giải thích Dockerfile, Multi-stage Build, Docker Compose và hướng dẫn cách đo, so sánh kích thước Docker Image. | Trực tiếp build Docker Image, chạy Container và kiểm tra API bằng curl. |
+| Part 3 | ChatGPT | Giải thích cách triển khai Docker Agent lên Render, hướng dẫn cấu hình Cloud Redis, environment variables và API testing; hỗ trợ phân tích sự khác biệt giữa Railway, Render và Cloud Run CI/CD pipeline. | Trực tiếp cấu hình và deploy trên Render, kiểm tra 4/4 Cloud API tests, đối chiếu configuration files và lưu evidence. |
 | Part 4 | ChatGPT | Giải thích API Key, JWT, Rate Limiting và Cost Guard; hướng dẫn các bước triển khai, kiểm thử và đề xuất code cho Monthly Cost Guard. | Kiểm tra các mã HTTP 401, 403, 200, 429 và thực hiện Redis test với kết quả 5/5 PASS. |
 | Part 5 | ChatGPT | Giải thích Graceful Shutdown, Stateless Agent, Load Balancing; hỗ trợ phân tích lỗi Blocking Event Loop và đề xuất cách khắc phục bằng asyncio. | Trực tiếp kiểm thử trước và sau khi sửa lỗi, kết quả cải thiện từ 1/2 lên 2/2 PASS. Kiểm tra 5 requests qua 3 Agent instances và xác nhận 10 messages được duy trì trong Redis. |
 | Part 6 | ChatGPT | Giải thích 12 tiêu chí Production Readiness, hướng dẫn thứ tự thực hiện, đề xuất code và cấu hình cho Docker, Redis, API Security, Cost Guard và Graceful Shutdown; hỗ trợ phân tích kết quả kiểm thử. | Trực tiếp triển khai và chạy script chấm bài gốc của giảng viên, đạt 12/12 tiêu chí và 43/43 checks passed. |
