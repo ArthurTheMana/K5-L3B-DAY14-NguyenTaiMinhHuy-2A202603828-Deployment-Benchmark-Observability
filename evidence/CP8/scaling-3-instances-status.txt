@@ -1,0 +1,4 @@
+NAME                 IMAGE              COMMAND                  SERVICE   CREATED          STATUS                    PORTS
+production-agent-1   production-agent   "uvicorn app.main:ap…"   agent     13 minutes ago   Up 13 minutes (healthy)   8000/tcp
+production-agent-2   production-agent   "uvicorn app.main:ap…"   agent     3 minutes ago    Up 3 minutes (healthy)    8000/tcp
+production-agent-3   production-agent   "uvicorn app.main:ap…"   agent     3 minutes ago    Up 3 minutes (healthy)    8000/tcp

@@ -1,0 +1,20 @@
+{
+    "status": "success",
+    "data": {
+        "alerts": [
+            {
+                "labels": {
+                    "alertname": "LLMCostBurnRateHigh",
+                    "severity": "warning"
+                },
+                "annotations": {
+                    "description": "T\u1ed1c \u0111\u1ed9 chi ti\u00eau hi\u1ec7n t\u1ea1i: $17.15/gi\u1edd",
+                    "summary": "Chi ph\u00ed LLM \u0111ang v\u01b0\u1ee3t $2/gi\u1edd"
+                },
+                "state": "firing",
+                "activeAt": "2026-11-26T10:08:57.571501534Z",
+                "value": "1.7153298770164966e+01"
+            }
+        ]
+    }
+}

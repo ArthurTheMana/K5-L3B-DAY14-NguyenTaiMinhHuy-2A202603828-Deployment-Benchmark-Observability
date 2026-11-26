@@ -1,0 +1,20 @@
+{
+    "status": "success",
+    "data": {
+        "alerts": [
+            {
+                "labels": {
+                    "alertname": "AgentHighLatencyP95",
+                    "severity": "warning"
+                },
+                "annotations": {
+                    "description": "p95 hi\u1ec7n t\u1ea1i: 1.911s (SLO: < 1s)",
+                    "summary": "p95 latency /ask v\u01b0\u1ee3t 1 gi\u00e2y"
+                },
+                "state": "firing",
+                "activeAt": "2026-11-26T10:03:32.401817116Z",
+                "value": "1.910668103448276e+00"
+            }
+        ]
+    }
+}

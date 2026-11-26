@@ -1,0 +1,8 @@
+NAME                      IMAGE                         COMMAND                  SERVICE      CREATED          STATUS                   PORTS
+production-agent-1        production-agent              "uvicorn app.main:ap…"   agent        3 minutes ago    Up 3 minutes (healthy)   8000/tcp
+production-agent-2        production-agent              "uvicorn app.main:ap…"   agent        3 minutes ago    Up 3 minutes (healthy)   8000/tcp
+production-grafana-1      grafana/grafana:13.2.4        "/run.sh"                grafana      17 minutes ago   Up 17 minutes            0.0.0.0:3000->3000/tcp, [::]:3000->3000/tcp
+production-jaeger-1       jaegertracing/jaeger:2.23.0   "/cmd/jaeger/jaeger-…"   jaeger       17 minutes ago   Up 17 minutes            0.0.0.0:4318->4318/tcp, [::]:4318->4318/tcp, 0.0.0.0:16686->16686/tcp, [::]:16686->16686/tcp
+production-locust-1       locustio/locust:2.47.0        "locust -f /mnt/locu…"   locust       17 minutes ago   Up 17 minutes            0.0.0.0:8089->8089/tcp, [::]:8089->8089/tcp
+production-nginx-1        nginx:1.28-alpine             "/docker-entrypoint.…"   nginx        17 minutes ago   Up 17 minutes            0.0.0.0:8080->80/tcp, [::]:8080->80/tcp
+production-prometheus-1   prom/prometheus:v3.16.0       "/bin/prometheus --c…"   prometheus   17 minutes ago   Up 17 minutes            0.0.0.0:9090->9090/tcp, [::]:9090->9090/tcp
