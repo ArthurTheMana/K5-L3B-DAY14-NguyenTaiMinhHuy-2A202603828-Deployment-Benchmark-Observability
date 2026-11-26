@@ -1,0 +1,227 @@
+=== CP3 - API Security Evidence ===
+Verification: Retest
+2026-11-26T11:45:51+07:00
+
+=== TEST 1: Health Check ===
+HTTP/1.1 200 OK
+date: Thu, 26 Nov 2026 04:45:51 GMT
+server: uvicorn
+content-length: 126
+content-type: application/json
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+referrer-policy: strict-origin-when-cross-origin
+
+{"status":"ok","uptime_seconds":211.8,"security":"JWT + RateLimit + CostGuard","timestamp":"2026-11-26T04:45:51.539394+00:00"}
+
+=== TEST 2: Missing JWT ===
+HTTP/1.1 401 Unauthorized
+date: Thu, 26 Nov 2026 04:45:51 GMT
+server: uvicorn
+www-authenticate: Bearer
+content-length: 76
+content-type: application/json
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+referrer-policy: strict-origin-when-cross-origin
+
+{"detail":"Authentication required. Include: Authorization: Bearer <token>"}
+
+=== TEST 3: Valid JWT ===
+HTTP/1.1 200 OK
+date: Thu, 26 Nov 2026 04:45:51 GMT
+server: uvicorn
+content-length: 192
+content-type: application/json
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+referrer-policy: strict-origin-when-cross-origin
+
+{"question":"Explain JWT","answer":"Tôi là AI agent được deploy lên cloud. Câu hỏi của bạn đã được nhận.","usage":{"requests_remaining":9,"budget_remaining_usd":1.9e-05}}
+
+=== TEST 4: Rate Limiting ===
+
+--- Request 1 ---
+HTTP/1.1 200 OK
+date: Thu, 26 Nov 2026 04:45:51 GMT
+server: uvicorn
+content-length: 178
+content-type: application/json
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+referrer-policy: strict-origin-when-cross-origin
+
+{"question":"Hello","answer":"Agent đang hoạt động tốt! (mock response) Hỏi thêm câu hỏi đi nhé.","usage":{"requests_remaining":8,"budget_remaining_usd":3.4e-05}}
+
+--- Request 2 ---
+HTTP/1.1 200 OK
+date: Thu, 26 Nov 2026 04:45:51 GMT
+server: uvicorn
+content-length: 186
+content-type: application/json
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+referrer-policy: strict-origin-when-cross-origin
+
+{"question":"Hello","answer":"Tôi là AI agent được deploy lên cloud. Câu hỏi của bạn đã được nhận.","usage":{"requests_remaining":7,"budget_remaining_usd":5.3e-05}}
+
+--- Request 3 ---
+HTTP/1.1 200 OK
+date: Thu, 26 Nov 2026 04:45:51 GMT
+server: uvicorn
+content-length: 178
+content-type: application/json
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+referrer-policy: strict-origin-when-cross-origin
+
+{"question":"Hello","answer":"Agent đang hoạt động tốt! (mock response) Hỏi thêm câu hỏi đi nhé.","usage":{"requests_remaining":6,"budget_remaining_usd":6.9e-05}}
+
+--- Request 4 ---
+HTTP/1.1 200 OK
+date: Thu, 26 Nov 2026 04:45:51 GMT
+server: uvicorn
+content-length: 186
+content-type: application/json
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+referrer-policy: strict-origin-when-cross-origin
+
+{"question":"Hello","answer":"Tôi là AI agent được deploy lên cloud. Câu hỏi của bạn đã được nhận.","usage":{"requests_remaining":5,"budget_remaining_usd":8.7e-05}}
+
+--- Request 5 ---
+HTTP/1.1 200 OK
+date: Thu, 26 Nov 2026 04:45:51 GMT
+server: uvicorn
+content-length: 210
+content-type: application/json
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+referrer-policy: strict-origin-when-cross-origin
+
+{"question":"Hello","answer":"Đây là câu trả lời từ AI agent (mock). Trong production, đây sẽ là response từ OpenAI/Anthropic.","usage":{"requests_remaining":4,"budget_remaining_usd":0.000108}}
+
+--- Request 6 ---
+HTTP/1.1 200 OK
+date: Thu, 26 Nov 2026 04:45:51 GMT
+server: uvicorn
+content-length: 187
+content-type: application/json
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+referrer-policy: strict-origin-when-cross-origin
+
+{"question":"Hello","answer":"Tôi là AI agent được deploy lên cloud. Câu hỏi của bạn đã được nhận.","usage":{"requests_remaining":3,"budget_remaining_usd":0.000126}}
+
+--- Request 7 ---
+HTTP/1.1 200 OK
+date: Thu, 26 Nov 2026 04:45:51 GMT
+server: uvicorn
+content-length: 210
+content-type: application/json
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+referrer-policy: strict-origin-when-cross-origin
+
+{"question":"Hello","answer":"Đây là câu trả lời từ AI agent (mock). Trong production, đây sẽ là response từ OpenAI/Anthropic.","usage":{"requests_remaining":2,"budget_remaining_usd":0.000147}}
+
+--- Request 8 ---
+HTTP/1.1 200 OK
+date: Thu, 26 Nov 2026 04:45:51 GMT
+server: uvicorn
+content-length: 210
+content-type: application/json
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+referrer-policy: strict-origin-when-cross-origin
+
+{"question":"Hello","answer":"Đây là câu trả lời từ AI agent (mock). Trong production, đây sẽ là response từ OpenAI/Anthropic.","usage":{"requests_remaining":1,"budget_remaining_usd":0.000167}}
+
+--- Request 9 ---
+HTTP/1.1 200 OK
+date: Thu, 26 Nov 2026 04:45:52 GMT
+server: uvicorn
+content-length: 187
+content-type: application/json
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+referrer-policy: strict-origin-when-cross-origin
+
+{"question":"Hello","answer":"Tôi là AI agent được deploy lên cloud. Câu hỏi của bạn đã được nhận.","usage":{"requests_remaining":0,"budget_remaining_usd":0.000186}}
+
+--- Request 10 ---
+HTTP/1.1 429 Too Many Requests
+date: Thu, 26 Nov 2026 04:45:52 GMT
+server: uvicorn
+x-ratelimit-limit: 10
+x-ratelimit-remaining: 0
+x-ratelimit-reset: 1795668412
+retry-after: 59
+content-length: 98
+content-type: application/json
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+referrer-policy: strict-origin-when-cross-origin
+
+{"detail":{"error":"Rate limit exceeded","limit":10,"window_seconds":60,"retry_after_seconds":59}}
+
+--- Request 11 ---
+HTTP/1.1 429 Too Many Requests
+date: Thu, 26 Nov 2026 04:45:52 GMT
+server: uvicorn
+x-ratelimit-limit: 10
+x-ratelimit-remaining: 0
+x-ratelimit-reset: 1795668412
+retry-after: 59
+content-length: 98
+content-type: application/json
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+referrer-policy: strict-origin-when-cross-origin
+
+{"detail":{"error":"Rate limit exceeded","limit":10,"window_seconds":60,"retry_after_seconds":59}}
+
+--- Request 12 ---
+HTTP/1.1 429 Too Many Requests
+date: Thu, 26 Nov 2026 04:45:52 GMT
+server: uvicorn
+x-ratelimit-limit: 10
+x-ratelimit-remaining: 0
+x-ratelimit-reset: 1795668412
+retry-after: 59
+content-length: 98
+content-type: application/json
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+referrer-policy: strict-origin-when-cross-origin
+
+{"detail":{"error":"Rate limit exceeded","limit":10,"window_seconds":60,"retry_after_seconds":59}}
+
+=== TEST 5: Usage Tracking ===
+HTTP/1.1 200 OK
+date: Thu, 26 Nov 2026 04:45:52 GMT
+server: uvicorn
+content-length: 184
+content-type: application/json
+x-content-type-options: nosniff
+x-frame-options: DENY
+x-xss-protection: 1; mode=block
+referrer-policy: strict-origin-when-cross-origin
+
+{"user_id":"student","date":"2026-11-26","requests":10,"input_tokens":22,"output_tokens":304,"cost_usd":0.000186,"budget_usd":1.0,"budget_remaining_usd":0.999814,"budget_used_pct":0.0}
+=== END OF CP3 EVIDENCE ===
