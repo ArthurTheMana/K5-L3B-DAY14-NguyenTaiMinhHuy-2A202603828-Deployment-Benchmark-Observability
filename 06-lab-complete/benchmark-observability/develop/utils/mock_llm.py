@@ -58,6 +58,21 @@ class LLMResult:
 # Mỗi entry: (các từ khoá kích hoạt, nội dung tài liệu)
 # ─────────────────────────────────────────────────────────
 KNOWLEDGE_BASE: list[tuple[list[str], str]] = [
+
+    # CP7: Knowledge Base improvement — JWT authentication
+    (["jwt", "json web token"],
+     "JWT là token chứa claims, có chữ ký để xác minh tính toàn vẹn "
+     "và thường có thời gian hết hạn. API key là khóa định danh "
+     "client, thường được kiểm tra trực tiếp và cần được quản lý, "
+     "thu hồi hoặc xoay vòng khi cần."),
+
+    # CP7: Knowledge Base improvement — Kubernetes HPA
+    (["hpa", "horizontal pod autoscaler"],
+     "Kubernetes HPA tự động tăng hoặc giảm số lượng Pod dựa trên "
+     "các chỉ số như CPU, memory và custom metrics, ví dụ số "
+     "request mỗi giây hoặc độ dài hàng đợi."),
+
+
     (["multi-stage", "multi stage"],
      "Multi-stage build tách Dockerfile thành stage builder (cài compiler, build dependencies) "
      "và stage runtime chỉ copy kết quả cần thiết. Image cuối nhỏ hơn và ít lỗ hổng bảo mật hơn."),

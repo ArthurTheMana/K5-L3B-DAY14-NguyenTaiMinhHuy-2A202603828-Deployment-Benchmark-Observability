@@ -1,0 +1,12 @@
+{
+    "answer": "C\u00e2u h\u1ecfi hay! \u0110i\u1ec1u n\u00e0y ph\u1ee5 thu\u1ed9c v\u00e0o ki\u1ebfn tr\u00fac h\u1ec7 th\u1ed1ng v\u00e0 y\u00eau c\u1ea7u c\u1ee5 th\u1ec3 c\u1ee7a b\u1ea1n.",
+    "model": "mock-llm-small",
+    "agent_version": "v1",
+    "usage": {
+        "input_tokens": 36,
+        "output_tokens": 20,
+        "cost_usd": 1.74e-05
+    },
+    "llm_latency_ms": 163.5,
+    "request_id": "81b1ff86444f"
+}
